@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chat App</title>
+  </head>
+  <body>
+    <h1>Welcome, {{ user.username }}!</h1>
+
+    <h2>Send a message to:</h2>
+    <select id="recipient">
+      {% for u in users %}
+      <option value="{{ u.id }}">{{ u.username }}</option>
+      {% endfor %}
+    </select>
+
+    <div id="messages">
+      {% for message in messages %}
+      <div><strong>{{ message.sender }}: </strong>{{ message.text }}</div>
+      {% endfor %}
+    </div>
+
+    <div id="chat-box">
+      <input type="text" id="message-input" />
+      <button id="send-button">Send</button>
+    </div>
+
+    <script>
+      const recipientSelect = document.getElementById("recipient");
+      const messageInput = document.getElementById("message-input");
+      const sendButton = document.getElementById("send-button");
+      const messagesDiv = document.getElementById("messages");
+
+      // Function to send a message to the server
+      function sendMessage() {
+        const recipientId = recipientSelect.value;
+        const messageText = messageInput.value;
+
+        // Use fetch() to send a POST request to the server with the message data
+        fetch("/send-message/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}",
+          },
+          body: JSON.stringify({
+            recipient: recipientId,
+            text: messageText,
+          }),
+        }).then((response) => {
+          // Clear the message input field when the message is sent successfully
+          messageInput.value = "";
+        });
+      }
+
+      // Add a click event listener to the sendButton to send a message
+      sendButton.addEventListener("click", sendMessage);
+
+      // Add a keydown event listener to the messageInput to send a message when the enter key is pressed
+      messageInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          sendMessage();
+        }
+      });
+    </script>
+  </body>
+</html>
